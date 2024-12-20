@@ -1,0 +1,53 @@
+name: "FreeIPA-Cluster-Test"
+description: "Run test playbooks against a FreeIPA cluster"
+inputs:
+  test_playbooks:
+    description: "Test playbooks to be executed using the cluster."
+    required: true
+
+  cluster_configuration:
+    description: "An ipalab-config cluster configuration."
+    required: true
+
+  ansible_requirements:
+    description: "An Ansible requirements file for the test playbooks."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt update -y
+        sudo apt install libkrb5-dev libvirt-dev
+        sudo apt install software-properties-common
+        sudo apt install ansible-core podman
+
+    - name: Setup ipalab config
+      shell: bash
+      run: |
+        python3 -m venv venv
+        source venv/bin/activate
+        pip3 install "ipalab-config>=0.5.1"
+        ipalab-config -o CONFIG_DIR -p ${{ inputs.test_playbooks }} ${{ inputs.cluster_configuration }}
+
+    - name: Create cluster pod
+      shell: bash
+      run: |
+        source venv/bin/activate
+        pip3 install podman-compose
+        podman-compose -f CONFIG_DIR/compose.yml up -d
+
+    - name: Deploy cluster
+      shell: bash
+      run: |
+        ansible-galaxy collection install -r CONFIG_DIR/requirements.yml
+        sed -i 's/become: .*$/become: false/' CONFIG_DIR/playbooks/install-cluster.yml
+        ansible-playbook -i CONFIG_DIR/inventory.yml CONFIG_DIR/playbooks/install-cluster.yml
+
+    - name: Run Ansible test playboooks
+      shell: bash
+      run: |
+        ansible-galaxy collection install -r ${{ inputs.ansible_requirements }}
+        ansible-playbook -i CONFIG_DIR/inventory.yml ${{ inputs.test_playbooks }}
