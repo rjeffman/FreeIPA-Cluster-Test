@@ -13,6 +13,10 @@ inputs:
     description: "Default distro. Any accepted by 'ipalab-config'."
     required: false
 
+  ansible_vars:
+    description: "Path to file with variables to be used when running the playbooks"
+    required: false
+
   ansible_requirements:
     description: "An Ansible requirements file for the test playbooks."
     required: false
@@ -89,5 +93,6 @@ runs:
         for playbook in ${{ inputs.test_playbooks }}
         do
           echo "Running playbook: ${playbook}"
-          ansible-playbook -i CONFIG_DIR/inventory.yml "${playbook}"
+          [ -n "${{ inputs.ansible_vars }}" ] && extra_opts="-e '@${{ inputs.ansible_vars}}'"
+          ansible-playbook -i CONFIG_DIR/inventory.yml ${extra_opts} "${playbook}"
         done
