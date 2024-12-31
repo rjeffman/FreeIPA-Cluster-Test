@@ -16,6 +16,34 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Verify entries
+      shell: bash
+      run: |
+        # Report entry verification
+        echo "Config: ${{ inputs.cluster_configuration }}"
+        [ -f "${{ inputs.cluster_configuration }}" ] || echo "Config file not found"
+        echo "Playbooks:"
+        for playbook in ${{ inputs.test_playbooks }}
+        do
+          echo -n "  - ${playbook}"
+          [ -f "${playbook}" ] && echo ": OK" || echo ": Not found"
+        done
+        echo "ansible-requirements: ${{ inputs.ansible_requirements || 'None' }}"
+        if [ -n "${{ inputs.ansible_requirements }}" ] && [ ! -f "${{ inputs.ansible_requirements }}" ]
+        then
+          echo "Requirements file not found."
+        fi
+        # Fail step if any entry isn't valid.
+        [ -f "${{ inputs.cluster_configuration }}" ] || exit 1
+        for playbook in ${{ inputs.test_playbooks }}
+        do
+          [ -f "${playbook}" ] || exit 1
+        done
+        if [ -n "${{ inputs.ansible_requirements }}" ] && [ ! -f "${{ inputs.ansible_requirements }}" ]
+        then
+          exit 1
+        fi
+
     - name: Install dependencies
       shell: bash
       run: |
