@@ -1,7 +1,7 @@
 FreeIPA-Cluster-Test Github Action
 ==================================
 
-This actions creates a FreeIPA cluster using containers by executing [ipalab-config](https://pypi.org/packages/ipalab-config) and run a set of playbook files.
+This actions creates a FreeIPA cluster using containers by executing [ipalab-config](https://pypi.org/project/ipalab-config) and run a set of playbook files.
 
 
 Usage
