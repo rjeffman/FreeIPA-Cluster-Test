@@ -1,13 +1,17 @@
 name: "FreeIPA-Cluster-Test"
 description: "Run test playbooks against a FreeIPA cluster"
 inputs:
+  cluster_configuration:
+    description: "An ipalab-config cluster configuration."
+    required: true
+
   test_playbooks:
     description: "Test playbooks to be executed using the cluster."
     required: true
 
-  cluster_configuration:
-    description: "An ipalab-config cluster configuration."
-    required: true
+  distro:
+    description: "Default distro. Any accepted by 'ipalab-config'."
+    required: false
 
   ansible_requirements:
     description: "An Ansible requirements file for the test playbooks."
@@ -57,8 +61,8 @@ runs:
       run: |
         python3 -m venv venv
         source venv/bin/activate
-        pip3 install "ipalab-config>=0.5.1"
-        ipalab-config -o CONFIG_DIR -p ${{ inputs.test_playbooks }} ${{ inputs.cluster_configuration }}
+        pip3 install "ipalab-config>=0.6"
+        ipalab-config -d ${{ inputs.distro || 'fedora-latest' }} -o CONFIG_DIR ${{ inputs.cluster_configuration }}
 
     - name: Create cluster pod
       shell: bash
