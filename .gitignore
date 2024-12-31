@@ -1,0 +1,4 @@
+# Usual temporary files
+*.~
+*.swp
+*.patch
