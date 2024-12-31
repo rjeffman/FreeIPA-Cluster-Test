@@ -52,10 +52,28 @@ jobs:
       - name: Run FreeIPA tests
         uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
         with:
-          cluster_configuration: tests/evironments/ipaserver_2_clients.yaml
+          cluster_configuration: tests/evironments/basic_cluster.yaml
           test_playbooks: >-
             tests/playbooks/test_hbac.yaml
             tests/playbooks/test_rbac.yaml
 ```
 
 Note that in the previous example it was used the folded strip block scalar `>-` that will produce a single line, space separated list of files.
+
+A cluster configuration example (the file `tests/evironments/basic_cluster.yaml`) could be created as:
+
+```yaml
+ipa_deployments:
+  - name: ipacluster
+    domain: ipa.test
+    admin_password: SomeADMINpassword
+    dm_password: SomeDMpassword
+    cluster:
+      servers:
+        - name: server
+          capabilities: ["CA", "DNS", "KRA"]
+        - name: replica
+          capabilities: ["CA"]
+      clients:
+        - name: cli-01
+```
