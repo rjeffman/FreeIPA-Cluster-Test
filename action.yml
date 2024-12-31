@@ -78,8 +78,16 @@ runs:
         sed -i 's/become: .*$/become: false/' CONFIG_DIR/playbooks/install-cluster.yml
         ansible-playbook -i CONFIG_DIR/inventory.yml CONFIG_DIR/playbooks/install-cluster.yml
 
+    - name: Install Ansible collections
+      if: ${{ inputs.ansible_requirements }}
+      shell: bash
+      run: ansible-galaxy collection install -r ${{ inputs.ansible_requirements }}
+
     - name: Run Ansible test playboooks
       shell: bash
       run: |
-        ansible-galaxy collection install -r ${{ inputs.ansible_requirements }}
-        ansible-playbook -i CONFIG_DIR/inventory.yml ${{ inputs.test_playbooks }}
+        for playbook in ${{ inputs.test_playbooks }}
+        do
+          echo "Running playbook: ${playbook}"
+          ansible-playbook -i CONFIG_DIR/inventory.yml "${playbook}"
+        done
