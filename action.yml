@@ -1,3 +1,4 @@
+---
 name: "FreeIPA-Cluster-Test"
 description: "Run test playbooks against a FreeIPA cluster"
 inputs:
