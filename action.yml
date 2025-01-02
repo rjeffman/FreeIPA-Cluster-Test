@@ -76,11 +76,14 @@ runs:
         pip3 install podman-compose
         podman-compose -f CONFIG_DIR/compose.yml up -d
 
+    - name: Ensure '/ect/shadow' is readable
+      shell: bash
+      run: ansible -i CONFIG_DIR/inventory.yml -m "ansible.builtin.shell" -a "chmod u+r /etc/shadow" -vvvv all
+
     - name: Deploy cluster
       shell: bash
       run: |
         ansible-galaxy collection install -r CONFIG_DIR/requirements.yml
-        sed -i 's/become: .*$/become: false/' CONFIG_DIR/playbooks/install-cluster.yml
         ansible-playbook -i CONFIG_DIR/inventory.yml CONFIG_DIR/playbooks/install-cluster.yml
 
     - name: Install Ansible collections
