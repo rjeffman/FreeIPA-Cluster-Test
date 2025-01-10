@@ -74,7 +74,8 @@ runs:
       run: |
         source venv/bin/activate
         pip3 install podman-compose
-        podman-compose -f CONFIG_DIR/compose.yml up -d
+        cd CONFIG_DIR
+        podman-compose -f compose.yml up -d
 
     - name: Ensure '/ect/shadow' is readable
       shell: bash
