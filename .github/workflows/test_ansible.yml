@@ -1,0 +1,28 @@
+---
+name: test-freeipa-matrix
+run-name: Test Distro Matrix
+on:
+  - push
+  - pull_request
+
+jobs:
+  test-freeipa-distro-matrix:
+    name: Test distro matrix
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+       test_distro:
+         - fedora-latest
+         - fedora-rawhide
+         - c10s
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Run FreeIPA tests
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.2.0
+        with:
+          cluster_configuration: tests/environments/server_only.yaml
+          distro: ${{ matrix.test_distro }}
+          test_playbooks: >-
+            tests/playbooks/test_hbac.yaml
