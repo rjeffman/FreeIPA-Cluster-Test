@@ -5,12 +5,12 @@ This actions creates a FreeIPA cluster using containers by executing [ipalab-con
 
 
 Usage
-=====
+-----
 
 For the basic usage you must provide a cluster configuration file and a test playbook.
 
 ```yaml
-- name: Test ipaserver
+- name: Test ipaserver deployment
   uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
   with:
     cluster_configuration: tests/config/ipaserver_only.yml
@@ -31,28 +31,31 @@ An example usage in a workflow with a `distro` matrix and multiple test playbook
 
 ```yaml
 ---
-name: test-freeipa-action
-run-name: Test FreeIPA using a Github Action
+name: test-freeipa-matrix
+run-name: Test FreeIPA using a Github Action and a Distro Matrix
 on:
   - push
   - pull_request
 
 jobs:
-  test-freeipa-hbac
+  test-freeipa-distros:
+    name: Test distro matrix
     runs-on: ubuntu-24.04
-    matrix:
-     test_distro:
-       - fedora-latest
-       - fedora-rawhide
-       - c10s
+    strategy:
+      matrix:
+       test_distro:
+         - fedora-latest
+         - fedora-rawhide
+         - c10s
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
 
       - name: Run FreeIPA tests
-        uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.2.0
         with:
-          cluster_configuration: tests/evironments/basic_cluster.yaml
+          cluster_configuration: tests/environments/basic_cluster.yaml
+          distro: ${{ matrix.test_distro }}
           test_playbooks: >-
             tests/playbooks/test_hbac.yaml
             tests/playbooks/test_rbac.yaml
