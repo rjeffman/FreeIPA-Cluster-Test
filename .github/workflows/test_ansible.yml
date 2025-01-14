@@ -1,6 +1,5 @@
 ---
-name: test-freeipa-matrix
-run-name: Test Distro Matrix
+name: Test Distro Matrix
 on:
   - push
   - pull_request
@@ -20,7 +19,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run FreeIPA tests
-        uses: rjeffman/FreeIPA-Cluster-Test@v1.2.0
+        # uses: rjeffman/FreeIPA-Cluster-Test@<version|main>
+        uses: ./
         with:
           cluster_configuration: tests/environments/server_only.yaml
           distro: ${{ matrix.test_distro }}
