@@ -26,6 +26,7 @@ The available input options are:
 | `distro`         | The default distro image to use. Defaults to `fedora-latest` | no |
 | `ansible_vars`   | Path to a file with variables to be used when running the playbooks. | no |
 | `ansible_requirements` | An Ansible requirements file for the test playbooks. | no |
+| `shutdown` | Shutdown the compose after tests are executed. Default is `false` to keep original behavior. | no |
 
 An example usage in a workflow with a `distro` matrix and multiple test playbooks:
 
@@ -59,6 +60,7 @@ jobs:
           test_playbooks: >-
             tests/playbooks/test_hbac.yaml
             tests/playbooks/test_rbac.yaml
+          shutdown: true
 ```
 
 Note that in the previous example it was used the folded strip block scalar `>-` that will produce a single line, space separated list of files.
@@ -80,3 +82,52 @@ ipa_deployments:
       clients:
         - name: cli-01
 ```
+
+Testing without Ansible
+-----------------------
+
+The original goal of this action was to run Ansible playbooks to test software (mostly Ansible roles and modules), and this section shows an exampel on how to use this action with other testing frameworks.
+
+```yaml
+---
+name: test-freeipa-action
+run-name: Test FreeIPA using a Github Action
+on:
+  - push
+  - pull_request
+
+jobs:
+  test-freeipa-hbac
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+      - name: Install test dependencies
+        run: |
+          pip install coverage pytest
+
+      - name: Run FreeIPA tests
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
+        with:
+          cluster_configuration: tests/evironments/basic_cluster.yaml
+
+      - name: Test with pytest
+        run: |
+          podman unshare --rootless-netns coverage run -m pytest
+
+      - name: Generate Coverage report
+        run: |
+          coverage report -m
+
+      - name: Shutdown FreeIPA environment
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
+        with:
+          cluster_configuration: tests/evironments/basic_cluster.yaml
+          shutdown: true
+```
+
+Note the use of `podman unshare --rootless-netns` to access the node namespace.

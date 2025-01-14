@@ -26,3 +26,4 @@ jobs:
           distro: ${{ matrix.test_distro }}
           test_playbooks: >-
             tests/playbooks/test_hbac.yaml
+          shutdown: true
