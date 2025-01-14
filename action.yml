@@ -22,6 +22,11 @@ inputs:
     description: "An Ansible requirements file for the test playbooks."
     required: false
 
+  shutdown:
+    description: "Shutdown environment."
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -61,43 +66,82 @@ runs:
         sudo apt install software-properties-common
         sudo apt install ansible-core podman
 
+    - name: Prepare virtual environment
+      shell: bash
+      run: |
+        if [ ! -f venv/bin/activate ]
+        then
+            python3 -m venv venv
+            source venv/bin/activate
+            pip3 install "podman-compose"
+        fi
+
     - name: Setup ipalab config
       shell: bash
       run: |
-        python3 -m venv venv
         source venv/bin/activate
         pip3 install "ipalab-config>=0.6"
-        ipalab-config -d ${{ inputs.distro || 'fedora-latest' }} -o CONFIG_DIR ${{ inputs.cluster_configuration }}
+        ipalab-config \
+          -d ${{ inputs.distro || 'fedora-latest' }} \
+          -o CONFIG_DIR ${{ inputs.cluster_configuration }}
 
-    - name: Create cluster pod
+    - name: Check if compose is running
+      id: check_compose
       shell: bash
       run: |
         source venv/bin/activate
-        pip3 install podman-compose
+        echo "compose_up=\
+            $([ -n "$(podman-compose ps | grep -v "CONTAINER ID")" ] \
+            && echo "YES" \
+            || echo "NO")" >> $GITHUB_OUTPUT
+
+    - name: Create cluster pod
+      if: ${{ steps.check_compose.vars.output.compose_up }} == "NO"
+      shell: bash
+      run: |
+        source venv/bin/activate
         cd CONFIG_DIR
         podman-compose -f compose.yml up -d
 
     - name: Ensure '/ect/shadow' is readable
-      shell: bash
-      run: ansible -i CONFIG_DIR/inventory.yml -m "ansible.builtin.shell" -a "chmod u+r /etc/shadow" -vvvv all
-
-    - name: Deploy cluster
+      if: ${{ steps.check_compose.vars.output.compose_up }} == "NO"
       shell: bash
       run: |
+        source venv/bin/activate
+        ansible -i CONFIG_DIR/inventory.yml \
+          -m "ansible.builtin.shell" \
+          -a "chmod u+r /etc/shadow" all
+
+    - name: Deploy cluster
+      if: ${{ steps.check_compose.vars.output.compose_up }} == "NO"
+      shell: bash
+      run: |
+        source venv/bin/activate
         ansible-galaxy collection install -r CONFIG_DIR/requirements.yml
         ansible-playbook -i CONFIG_DIR/inventory.yml CONFIG_DIR/playbooks/install-cluster.yml
 
     - name: Install Ansible collections
       if: ${{ inputs.ansible_requirements }}
       shell: bash
-      run: ansible-galaxy collection install -r ${{ inputs.ansible_requirements }}
+      run: |
+        source venv/bin/activate
+        ansible-galaxy collection install -r ${{ inputs.ansible_requirements }}
 
     - name: Run Ansible test playboooks
+      if: ${{ inputs.test_playbooks }}
       shell: bash
       run: |
+        source venv/bin/activate
         for playbook in ${{ inputs.test_playbooks }}
         do
           echo "Running playbook: ${playbook}"
           [ -n "${{ inputs.ansible_vars }}" ] && extra_opts="-e '@${{ inputs.ansible_vars}}'"
           ansible-playbook -i CONFIG_DIR/inventory.yml ${extra_opts} "${playbook}"
         done
+
+    - name: Shutdown environment
+      shell: bash
+      run: |
+        source venv/bin/activate
+        cd CONFIG_DIR
+        [ "${{ inputs.shutdown }}" == "true" ] && podman-compose -f compose.yml down ||:

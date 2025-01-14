@@ -1,0 +1,53 @@
+---
+name: Test Environment Reuse
+on:
+  - push
+  - pull_request
+
+jobs:
+  test-environment-reuse:
+    name: Test environment reuse
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Deploy environment
+        # uses: rjeffman/FreeIPA-Cluster-Test@<version|main>
+        uses: ./
+        with:
+          cluster_configuration: tests/environments/server_only.yaml
+          shutdown: false
+
+      - name: Check if cluster is up
+        run: |
+          podman ps -f "name=server" -f "pod=pod_ipa-lab" --format="{{ .Names }}"
+          test -n "$(podman ps -f "name=server" -f "pod=pod_ipa-lab" --format="{{ .Names }}")"
+
+      - name: Update /etc/hosts
+        run: |
+          podman ps
+          host_entry="$(podman exec server bash -c 'echo "$(hostname -I)  $(hostname)"')"
+          echo "${host_entry}" | sudo tee -a /etc/hosts
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest requests
+
+      - name: Run Pytest
+        # note that any command that needs to access the pod network
+        # should be executed with `podman unshare --rootless-netns`
+        run: |
+          podman unshare --rootless-netns pytest
+
+      - name: Shutdown environment
+        # uses: rjeffman/FreeIPA-Cluster-Test@<version|main>
+        uses: ./
+        with:
+          cluster_configuration: tests/environments/server_only.yaml
+          shutdown: true
+
+      - name: Check if cluster is down
+        run: |
+          podman ps -f "name=server" -f "pod=pod_ipa-lab" --format="{{ .Names }}"
+          test -z "$(podman ps -f "name=server" -f "pod=pod_ipa-lab" --format="{{ .Names }}")"
