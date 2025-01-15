@@ -27,3 +27,6 @@ jobs:
           test_playbooks: >-
             tests/playbooks/test_hbac.yaml
           shutdown: true
+
+      - name: Check if cluster is down
+        run: test -z "$(podman ps -f "name=server" -f "pod=pod_ipa-lab" --format="{{ .Names }}")"
