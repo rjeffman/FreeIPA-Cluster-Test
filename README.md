@@ -11,7 +11,7 @@ For the basic usage you must provide a cluster configuration file and a test pla
 
 ```yaml
 - name: Test ipaserver deployment
-  uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
+  uses: rjeffman/FreeIPA-Cluster-Test@v1.3.0
   with:
     cluster_configuration: tests/config/ipaserver_only.yml
     test_playbooks: tests/user/test_user.yml
@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run FreeIPA tests
-        uses: rjeffman/FreeIPA-Cluster-Test@v1.2.0
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.3.0
         with:
           cluster_configuration: tests/environments/basic_cluster.yaml
           distro: ${{ matrix.test_distro }}
@@ -111,7 +111,7 @@ jobs:
           pip install coverage pytest
 
       - name: Run FreeIPA tests
-        uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.3.0
         with:
           cluster_configuration: tests/evironments/basic_cluster.yaml
 
@@ -124,7 +124,7 @@ jobs:
           coverage report -m
 
       - name: Shutdown FreeIPA environment
-        uses: rjeffman/FreeIPA-Cluster-Test@v1.0.0
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.3.0
         with:
           cluster_configuration: tests/evironments/basic_cluster.yaml
           shutdown: true
