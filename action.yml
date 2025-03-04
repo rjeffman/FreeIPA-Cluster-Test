@@ -32,6 +32,12 @@ inputs:
     default: "ipalab-config"
     required: false
 
+  debug:
+    description: "Run in debug mode."
+    default: false
+    required: false
+    type: booleaan
+
 runs:
   using: "composite"
   steps:
@@ -87,7 +93,8 @@ runs:
         IPALAB_CONFIG=${{ inputs.ipalab_config_version }}
         source venv/bin/activate
         pip3 install "${IPALAB_CONFIG:-"ipalab-config"}"
-        ipalab-config \
+        DEBUG="$([ "${{ inputs.debug }}" == "true" ] && echo '--debug')"
+        ipalab-config $DEBUG \
           -d ${{ inputs.distro || 'fedora-latest' }} \
           -o CONFIG_DIR ${{ inputs.cluster_configuration }}
 
