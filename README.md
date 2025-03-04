@@ -27,6 +27,8 @@ The available input options are:
 | `ansible_vars`   | Path to a file with variables to be used when running the playbooks. | no |
 | `ansible_requirements` | An Ansible requirements file for the test playbooks. | no |
 | `shutdown` | Shutdown the compose after tests are executed. Default is `false` to keep original behavior. | no |
+| `ipalab_config_version` | The `ipalab-config` version to install. | no |
+| `debug` | Run ipalab-config in debug mode. | no |
 
 An example usage in a workflow with a `distro` matrix and multiple test playbooks:
 
@@ -81,6 +83,32 @@ ipa_deployments:
           capabilities: ["CA"]
       clients:
         - name: cli-01
+```
+
+**Using a custom ipalab-config version**
+
+It is possible to use a specific `ipalab-config` version using a version specifier or a specific archive by setting the `ipalab_config_version`.
+
+To pin `ipalab_config` version use:
+
+```
+  - name: Run FreeIPA tests
+    uses: rjeffman/FreeIPA-Cluster-Test@v1.3.0
+    with:
+      cluster_configuration: tests/environments/basic_cluster.yaml
+      test_playbooks: tests/playbooks/mytests.yaml
+      ipalab_config_version: "ipalab-config==0.10.2"
+```
+
+To use a custom `ipalab_config` repository or development branch:
+
+```
+  - name: Run FreeIPA tests
+    uses: rjeffman/FreeIPA-Cluster-Test@v1.3.0
+    with:
+      cluster_configuration: tests/environments/basic_cluster.yaml
+      test_playbooks: tests/playbooks/mytests.yaml
+      ipalab_config_version: "git+https://github.com/rjeffman/ipalab-config.git@main"
 ```
 
 Testing without Ansible

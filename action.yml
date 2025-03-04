@@ -27,6 +27,11 @@ inputs:
     required: false
     type: boolean
 
+  ipalab_config_version:
+    description: "pip ipalab-config version/origin."
+    default: "ipalab-config"
+    required: false
+
 runs:
   using: "composite"
   steps:
@@ -79,8 +84,9 @@ runs:
     - name: Setup ipalab config
       shell: bash
       run: |
+        IPALAB_CONFIG=${{ inputs.ipalab_config_version }}
         source venv/bin/activate
-        pip3 install "ipalab-config>=0.6"
+        pip3 install "${IPALAB_CONFIG:-"ipalab-config"}"
         ipalab-config \
           -d ${{ inputs.distro || 'fedora-latest' }} \
           -o CONFIG_DIR ${{ inputs.cluster_configuration }}
