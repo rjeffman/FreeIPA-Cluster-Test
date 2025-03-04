@@ -118,7 +118,9 @@ runs:
       run: |
         source venv/bin/activate
         ansible-galaxy collection install -r CONFIG_DIR/requirements.yml
-        ansible-playbook -i CONFIG_DIR/inventory.yml CONFIG_DIR/playbooks/install-cluster.yml
+        ansible-playbook \
+          -i CONFIG_DIR/inventory.yml \
+          ${HOME}/.ansible/collections/ansible_collections/freeipa/ansible_freeipa/playbooks/install-cluster.yml
 
     - name: Install Ansible collections
       if: ${{ inputs.ansible_requirements }}
