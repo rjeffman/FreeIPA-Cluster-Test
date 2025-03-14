@@ -11,9 +11,9 @@ jobs:
     strategy:
       matrix:
        test_distro:
-         - fedora-latest
-         - fedora-rawhide
-         - c10s
+         - fedora:latest
+         - fedora:rawhide
+         - centos:stream10
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
