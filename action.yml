@@ -103,6 +103,7 @@ runs:
       shell: bash
       run: |
         source venv/bin/activate
+        cd CONFIG_DIR
         echo "compose_up=\
             $([ -n "$(podman-compose ps | grep -v "CONTAINER ID")" ] \
             && echo "YES" \
