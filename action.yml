@@ -95,8 +95,9 @@ runs:
         pip3 install "${IPALAB_CONFIG:-"ipalab-config"}"
         DEBUG="$([ "${{ inputs.debug }}" == "true" ] && echo -n '--debug' ||:)"
         ipalab-config $DEBUG \
-          -d ${{ inputs.distro || 'fedora-latest' }} \
-          -o CONFIG_DIR ${{ inputs.cluster_configuration }}
+          $([ -z "${{ inputs.distro }}" ] || echo -n "-d ${{ inputs.distro }}") \
+          -o CONFIG_DIR \
+          ${{ inputs.cluster_configuration }}
 
     - name: Check if compose is running
       id: check_compose
