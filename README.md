@@ -23,7 +23,7 @@ The available input options are:
 | ----------------------- | --------------------------------------- | -------- |
 | `cluster_configuration` | An ipalab-config cluster configuration. | yes      |
 | `test_playbooks` | A space separated list of playbooks to be executed using the cluster. | yes |
-| `distro`         | The default distro image to use. Defaults to `fedora-latest` | no |
+| `distro`         | The default distro image to use. Defaults to `fedora`. | no |
 | `ansible_vars`   | Path to a file with variables to be used when running the playbooks. | no |
 | `ansible_requirements` | An Ansible requirements file for the test playbooks. | no |
 | `shutdown` | Shutdown the compose after tests are executed. Default is `false` to keep original behavior. | no |
